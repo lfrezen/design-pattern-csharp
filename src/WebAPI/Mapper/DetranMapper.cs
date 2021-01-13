@@ -10,6 +10,8 @@ namespace DesignPatternSamples.WebAPI.Mapper
         {
             CreateMap<VeiculoModel, Veiculo>();
             CreateMap<DebitoVeiculo, DebitoVeiculoModel>();
+            CreateMap<CnhModel, Cnh>();
+            CreateMap<PontoCnh, PontoCnhModel>();
         }
     }
 }

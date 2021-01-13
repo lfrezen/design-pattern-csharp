@@ -47,6 +47,9 @@ namespace DesignPatternSamples.WebAPI
             services.AddDependencyInjection()
                 .AddAutoMapper();
 
+            services.AddDependencyInjectionPontos()
+                .AddAutoMapper();
+
             /*Cache distribuído FAKE*/
             services.AddDistributedMemoryCache();
             
@@ -89,6 +92,8 @@ namespace DesignPatternSamples.WebAPI
 
             app.UseDetranVerificadorDebitosFactory();
 
+            app.UseDetranVerificadorPontosFactory();
+
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseMvc();
@@ -111,6 +116,17 @@ namespace DesignPatternSamples.WebAPI
                 .AddScoped<ExceptionHandlingMiddleware>();
         }
 
+        public static IServiceCollection AddDependencyInjectionPontos(this IServiceCollection services)
+        {
+            return services
+                .AddTransient<IDetranVerificadorPontosService, DetranVerificadorPontosServices>()
+                .Decorate<IDetranVerificadorPontosService, DetranVerificadorPontosDecoratorCache>()
+                .Decorate<IDetranVerificadorPontosService, DetranVerificadorPontosDecoratorLogger>()
+                .AddSingleton<IDetranVerificadorPontosFactory, DetranVerificadorPontosFactory>()
+                .AddTransient<DetranSPVerificadorPontosRepository>()
+                .AddScoped<ExceptionHandlingMiddleware>();
+        }
+
         public static IServiceCollection AddAutoMapper(this IServiceCollection services)
         {
             var types = AppDomain.CurrentDomain.GetAssemblies()
@@ -130,6 +146,14 @@ namespace DesignPatternSamples.WebAPI
                 .Register("RJ", typeof(DetranRJVerificadorDebitosRepository))
                 .Register("SP", typeof(DetranSPVerificadorDebitosRepository))
                 .Register("RS", typeof(DetranRSVerificadorDebitosRepository));
+
+            return app;
+        }
+
+        public static IApplicationBuilder UseDetranVerificadorPontosFactory(this IApplicationBuilder app)
+        {
+            app.ApplicationServices.GetService<IDetranVerificadorPontosFactory>()
+                .Register("SP", typeof(DetranSPVerificadorPontosRepository));
 
             return app;
         }
